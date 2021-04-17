@@ -33,6 +33,9 @@ class IntroductionScreen extends StatefulWidget {
   /// Next button
   final Widget? next;
 
+  /// Back button
+  final Widget? back;
+
   /// Is the Skip button should be display
   ///
   /// @Default `false`
@@ -42,6 +45,9 @@ class IntroductionScreen extends StatefulWidget {
   ///
   /// @Default `true`
   final bool showNextButton;
+
+  /// @Default `false`
+  final bool showBackButton;
 
   /// If the 'Done' button should be rendered at all the end
   ///
@@ -112,6 +118,9 @@ class IntroductionScreen extends StatefulWidget {
   /// Color of next button
   final Color? nextColor;
 
+  /// Color of back button
+  final Color? backColor;
+
   /// Color of done button
   final Color? doneColor;
 
@@ -169,8 +178,10 @@ class IntroductionScreen extends StatefulWidget {
     this.onChange,
     this.skip,
     this.next,
+    this.back,
     this.showSkipButton = false,
     this.showNextButton = true,
+    this.showBackButton = false,
     this.showDoneButton = true,
     this.isProgress = true,
     this.isProgressTap = true,
@@ -187,6 +198,7 @@ class IntroductionScreen extends StatefulWidget {
     this.color,
     this.skipColor,
     this.nextColor,
+    this.backColor,
     this.doneColor,
     this.isTopSafeArea = false,
     this.isBottomSafeArea = false,
@@ -206,6 +218,7 @@ class IntroductionScreen extends StatefulWidget {
         ),
         assert(!showDoneButton || (done != null && onDone != null)),
         assert((showSkipButton && skip != null) || !showSkipButton),
+        assert((showBackButton && back != null) || !showBackButton),
         assert((showNextButton && next != null) || !showNextButton),
         assert(skipFlex >= 0 && dotsFlex >= 0 && nextFlex >= 0),
         assert(initialPage >= 0),
@@ -294,6 +307,12 @@ class IntroductionScreenState extends State<IntroductionScreen> {
       onPressed: isSkipBtn ? _onSkip : null,
     );
 
+    final backBtn = IntroButton(
+      child: widget.back,
+      color: widget.backColor ?? widget.color,
+      onPressed: widget.showBackButton && !_isScrolling ? previous : null,
+    );
+
     final nextBtn = IntroButton(
       child: widget.next,
       color: widget.nextColor ?? widget.color,
@@ -346,6 +365,7 @@ class IntroductionScreenState extends State<IntroductionScreen> {
             left: 0,
             right: 0,
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
                   padding: widget.controlsPadding,
@@ -355,7 +375,9 @@ class IntroductionScreenState extends State<IntroductionScreen> {
                     children: [
                       Expanded(
                         flex: widget.skipFlex,
-                        child: _toggleBtn(skipBtn, isSkipBtn),
+                        child: widget.showBackButton
+                            ? _toggleBtn(backBtn, _currentPage != 0)
+                            : _toggleBtn(skipBtn, isSkipBtn),
                       ),
                       Expanded(
                         flex: widget.dotsFlex,
