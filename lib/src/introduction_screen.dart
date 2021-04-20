@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:introduction_screen/src/model/page_view_model.dart';
 import 'package:introduction_screen/src/ui/intro_button.dart';
 import 'package:introduction_screen/src/ui/intro_page.dart';
+import 'package:introduction_screen/src/ui/loading_button.dart';
 
 class IntroductionScreen extends StatefulWidget {
   /// All pages of the onboarding
@@ -228,8 +229,10 @@ class IntroductionScreen extends StatefulWidget {
   IntroductionScreenState createState() => IntroductionScreenState();
 }
 
-class IntroductionScreenState extends State<IntroductionScreen> {
+class IntroductionScreenState extends State<IntroductionScreen>
+    with SingleTickerProviderStateMixin {
   late PageController _pageController;
+  late AnimationController _animationController;
   double _currentPage = 0.0;
   bool _isSkipPressed = false;
   bool _isScrolling = false;
@@ -242,6 +245,11 @@ class IntroductionScreenState extends State<IntroductionScreen> {
     int initialPage = min(widget.initialPage, getPagesLength() - 1);
     _currentPage = initialPage.toDouble();
     _pageController = PageController(initialPage: initialPage);
+    _animationController =
+        AnimationController(vsync: this, duration: Duration(milliseconds: 750));
+    controller.addListener(() {
+      setState(() {});
+    });
   }
 
   int getPagesLength() {
@@ -301,28 +309,40 @@ class IntroductionScreenState extends State<IntroductionScreen> {
     final isLastPage = (_currentPage.round() == getPagesLength() - 1);
     bool isSkipBtn = (!_isSkipPressed && !isLastPage && widget.showSkipButton);
 
-    final skipBtn = IntroButton(
-      child: widget.skip,
-      color: widget.skipColor ?? widget.color,
-      onPressed: isSkipBtn ? _onSkip : null,
+    final skipBtn = Padding(
+      padding: EdgeInsets.only(bottom: 16),
+      child: IntroButton(
+        child: widget.skip,
+        color: widget.skipColor ?? widget.color,
+        onPressed: isSkipBtn ? _onSkip : null,
+      ),
     );
 
-    final backBtn = IntroButton(
-      child: widget.back,
-      color: widget.backColor ?? widget.color,
-      onPressed: widget.showBackButton && !_isScrolling ? previous : null,
+    final backBtn = Padding(
+      padding: EdgeInsets.only(bottom: 16),
+      child: IntroButton(
+        child: widget.back,
+        color: widget.backColor ?? widget.color,
+        onPressed: widget.showBackButton && !_isScrolling ? previous : null,
+      ),
     );
 
-    final nextBtn = IntroButton(
+    final nextBtn = LoadingButton(
       child: widget.next,
+      currentPage: _currentPage,
       color: widget.nextColor ?? widget.color,
       onPressed: widget.showNextButton && !_isScrolling ? next : null,
+      onHold: _onSkip,
     );
 
-    final doneBtn = IntroButton(
-      child: widget.done,
-      color: widget.doneColor ?? widget.color,
-      onPressed: widget.showDoneButton && !_isScrolling ? widget.onDone : null,
+    final doneBtn = Padding(
+      padding: EdgeInsets.only(bottom: 16),
+      child: IntroButton(
+        child: widget.done,
+        color: widget.doneColor ?? widget.color,
+        onPressed:
+            widget.showDoneButton && !_isScrolling ? widget.onDone : null,
+      ),
     );
 
     return Scaffold(
@@ -368,7 +388,7 @@ class IntroductionScreenState extends State<IntroductionScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  padding: widget.controlsPadding,
+                  padding: EdgeInsets.fromLTRB(16, 16, 16, 0),
                   margin: widget.controlsMargin,
                   decoration: widget.dotsContainerDecorator,
                   child: Row(
