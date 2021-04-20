@@ -2,13 +2,21 @@ import 'package:flutter/material.dart';
 
 class LoadingButton extends StatefulWidget {
   final VoidCallback? onPressed;
+  final VoidCallback? skipToggle;
   final VoidCallback? onHold;
+  final bool? showSkip;
   final Color? color;
   final Widget? child;
   final double? currentPage;
 
   const LoadingButton(
-      {this.onPressed, this.onHold, this.child, this.color, this.currentPage});
+      {this.onPressed,
+      this.onHold,
+      this.skipToggle,
+      this.showSkip,
+      this.child,
+      this.color,
+      this.currentPage});
 
   @override
   LoadingButtonState createState() => LoadingButtonState();
@@ -35,47 +43,44 @@ class LoadingButtonState extends State<LoadingButton>
         if (controller.value > 0.25) {
           colorController.forward();
         }
+        if (colorController.value == 1) {
+          widget.skipToggle!();
+        }
       });
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    print(MediaQuery.of(context).size.height);
     return GestureDetector(
       onTap: widget.onPressed,
-      onLongPress: () => controller.forward(),
+      onLongPress: () => widget.onHold != null ? controller.forward() : null,
       onLongPressUp: () {
-        if (controller.status == AnimationStatus.forward) {
-          controller.reverse();
-        }
+        if (controller.status == AnimationStatus.forward) controller.reverse();
+        if (widget.onHold == null) widget.onPressed!();
       },
       child: Stack(
         clipBehavior: Clip.none,
         alignment: Alignment.center,
         children: <Widget>[
-          Padding(
-            padding: EdgeInsets.only(bottom: 16),
-            child: CircularProgressIndicator(
-              value: controller.value,
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xff2A50AD)),
-            ),
+          CircularProgressIndicator(
+            value: controller.value,
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xff2A50AD)),
           ),
-          Padding(
-            child: widget.child,
-            padding: EdgeInsets.only(bottom: 16),
-          ),
-          Positioned(
-            top: 35,
-            child: Text(
-              'Hold to Skip',
-              style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade900
-                      .withOpacity(1 - colorController.value)),
-            ),
-          )
+          widget.child!,
+          widget.onHold != null && widget.showSkip != false
+              ? Positioned(
+                  top: 35,
+                  child: Text(
+                    'Hold to Skip',
+                    style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey.shade900
+                            .withOpacity(1 - colorController.value)),
+                  ),
+                )
+              : Container()
         ],
       ),
     );

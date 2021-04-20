@@ -233,6 +233,8 @@ class IntroductionScreenState extends State<IntroductionScreen>
     with SingleTickerProviderStateMixin {
   late PageController _pageController;
   late AnimationController _animationController;
+  late AnimationController colorController;
+
   double _currentPage = 0.0;
   bool _isSkipPressed = false;
   bool _isScrolling = false;
@@ -246,8 +248,8 @@ class IntroductionScreenState extends State<IntroductionScreen>
     _currentPage = initialPage.toDouble();
     _pageController = PageController(initialPage: initialPage);
     _animationController =
-        AnimationController(vsync: this, duration: Duration(milliseconds: 750));
-    controller.addListener(() {
+        AnimationController(vsync: this, duration: Duration(milliseconds: 500));
+    _animationController.addListener(() {
       setState(() {});
     });
   }
@@ -304,30 +306,30 @@ class IntroductionScreenState extends State<IntroductionScreen>
         : Opacity(opacity: 0.0, child: IgnorePointer(child: btn));
   }
 
+  void _toggleSkip() => setState(() => showSkipText = false);
+
+  bool showSkipText = true;
+
   @override
   Widget build(BuildContext context) {
     final isLastPage = (_currentPage.round() == getPagesLength() - 1);
     bool isSkipBtn = (!_isSkipPressed && !isLastPage && widget.showSkipButton);
 
-    final skipBtn = Padding(
-      padding: EdgeInsets.only(bottom: 16),
-      child: IntroButton(
-        child: widget.skip,
-        color: widget.skipColor ?? widget.color,
-        onPressed: isSkipBtn ? _onSkip : null,
-      ),
+    final skipBtn = IntroButton(
+      child: widget.skip,
+      color: widget.skipColor ?? widget.color,
+      onPressed: isSkipBtn ? _onSkip : null,
     );
 
-    final backBtn = Padding(
-      padding: EdgeInsets.only(bottom: 16),
-      child: IntroButton(
-        child: widget.back,
-        color: widget.backColor ?? widget.color,
-        onPressed: widget.showBackButton && !_isScrolling ? previous : null,
-      ),
+    final backBtn = LoadingButton(
+      child: widget.back,
+      color: widget.backColor ?? widget.color,
+      onPressed: widget.showBackButton && !_isScrolling ? previous : null,
     );
 
     final nextBtn = LoadingButton(
+      skipToggle: _toggleSkip,
+      showSkip: showSkipText,
       child: widget.next,
       currentPage: _currentPage,
       color: widget.nextColor ?? widget.color,
@@ -335,14 +337,10 @@ class IntroductionScreenState extends State<IntroductionScreen>
       onHold: _onSkip,
     );
 
-    final doneBtn = Padding(
-      padding: EdgeInsets.only(bottom: 16),
-      child: IntroButton(
-        child: widget.done,
-        color: widget.doneColor ?? widget.color,
-        onPressed:
-            widget.showDoneButton && !_isScrolling ? widget.onDone : null,
-      ),
+    final doneBtn = IntroButton(
+      child: widget.done,
+      color: widget.doneColor ?? widget.color,
+      onPressed: widget.showDoneButton && !_isScrolling ? widget.onDone : null,
     );
 
     return Scaffold(
@@ -388,16 +386,14 @@ class IntroductionScreenState extends State<IntroductionScreen>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  padding: EdgeInsets.fromLTRB(16, 16, 16, 0),
+                  padding: EdgeInsets.all(16),
                   margin: widget.controlsMargin,
                   decoration: widget.dotsContainerDecorator,
                   child: Row(
                     children: [
                       Expanded(
                         flex: widget.skipFlex,
-                        child: widget.showBackButton
-                            ? _toggleBtn(backBtn, _currentPage != 0)
-                            : _toggleBtn(skipBtn, isSkipBtn),
+                        child: _toggleBtn(backBtn, _currentPage != 0),
                       ),
                       Expanded(
                         flex: widget.dotsFlex,

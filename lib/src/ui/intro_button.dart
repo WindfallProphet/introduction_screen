@@ -10,15 +10,13 @@ class IntroButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: onPressed,
-      child: child ?? SizedBox(),
-      style: TextButton.styleFrom(
-        primary: color,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.0),
-        ),
-      ),
-    );
+    return Padding(
+        padding: EdgeInsets.zero,
+        child: Center(
+          child: GestureDetector(
+            onTap: onPressed,
+            child: child ?? SizedBox(),
+          ),
+        ));
   }
 }
