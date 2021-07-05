@@ -1,7 +1,7 @@
 library introduction_screen;
 
 import 'dart:math';
-
+import 'dart:io' show Platform;
 import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:introduction_screen/src/model/page_view_model.dart';
@@ -414,8 +414,16 @@ class IntroductionScreenState extends State<IntroductionScreen>
                       Expanded(
                         flex: widget.nextFlex,
                         child: isLastPage
-                            ? _toggleBtn(doneBtn, widget.showDoneButton)
-                            : _toggleBtn(nextBtn, widget.showNextButton),
+                            ? Container(
+                                padding: EdgeInsets.only(
+                                    top: 2, right: Platform.isIOS ? 25 : 0),
+                                child:
+                                    _toggleBtn(doneBtn, widget.showDoneButton))
+                            : Container(
+                                padding: EdgeInsets.only(
+                                    right: Platform.isIOS ? 25 : 0),
+                                child:
+                                    _toggleBtn(nextBtn, widget.showNextButton)),
                       ),
                     ].asReversed(widget.rtl),
                   ),
